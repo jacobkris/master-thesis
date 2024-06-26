@@ -187,7 +187,11 @@
     \RequirePackage[noabbrev]{cleveref}
 \fi
 \RequirePackage[acronym]{glossaries}        % create a glossary and acronym list
-
+\RequirePackage{algorithm} % for creating algorihthms
+\RequirePackage{algpseudocode} % the same
+\RequirePackage{tikz}
+\RequirePackage{standalone}
+\usetikzlibrary{shapes,arrows,positioning}
 %% CUSTOMISATION
 
 % Page geometry and spacing (same for even and odd pages)

@@ -1,0 +1,30 @@
+\documentclass[crop,tikz]{standalone}
+
+\begin{document}
+
+\begin{tikzpicture}[node distance=4cm, auto,
+    block/.style={rectangle, draw, text width=5em, text centered, minimum height=4em},
+    line/.style={draw, -latex'}]
+
+    % Nodes
+    \node [block] (zynq) {ZYNQ UltraScale+ mpsoc};
+    \node [block, right=of zynq] (interconnect) {Interconnect};
+    \node [block, right=of interconnect] (axidma) {AXI DMA};
+    \node [block, right=of axidma] (converter) {ARBITRARY RATE CONVERTER};
+    
+    % Internal nodes
+    \node [above=0.5cm of zynq.north east] (m_axi_fpd) {M\_AXI\_FPD};
+    \node [below=0.5cm of zynq.south east] (s_axi_hpd) {S\_AXI\_HPD};
+    
+    % Arrows
+    \path [line] (m_axi_fpd) -- node [above] {S\_AXI\_LITE} (interconnect);
+    \path [line] (interconnect) -- node [above] {M\_AXI\_SG} (axidma);
+    \path [line] (interconnect) -- node [below] {M\_AXI\_S2MM} (axidma);
+    \path [line] (interconnect) -- node [below] {M\_AXI\_MM2S} (axidma);
+    \path [line] (axidma) -- node [above] {M\_AXIS\_MM2S} (converter);
+    \path [line] (converter) -- node [below] {S\_AXIS\_S2MM} (axidma);
+    \path [line] (interconnect) -- node [below] {S\_AXI\_HPD} (s_axi_hpd);
+
+\end{tikzpicture}
+
+\end{document}

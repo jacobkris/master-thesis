@@ -1,0 +1,185 @@
+\chapter{Implementation}
+\label{chap:implementation}
+This chapter describes the design and implementation process of the System architecture,
+
+\section{System Architecture Overview}
+\subsection{FASRC Algorithm}
+The \acrfull{fasrc} is the main algorithm in the implementation.
+% flow diagram of the algorithm
+% input signal -> [Find new time instant] -> [Calculate value for new time isntant] <- [coefficients] -> output signal
+
+
+% algorithm for calculating the new time instants
+\begin{algorithm}
+\caption{\acrshort{fasrc} algorithm flow}\label{alg:main}
+\begin{algorithmic}
+\State \textbf{procedure} FASRC(input signal x, output signal y)
+\State $coeff\_order \gets \text{length of } coeffs$
+    \State $input\_period \gets 1 / fs\_in$
+    \State $output\_period \gets 1 / fs\_out$
+    \State $output\_length \gets \lceil \text{length of } input\_signal \times fs\_out / fs\_in \rceil$
+    \State $output\_signal \gets \text{array of zeros of size } output\_length$
+    \For{$samples$ \textbf{in} $output_signal$}
+        \State $t_k \gets sample\_idx \times output\_period$
+        \State $n \gets \lfloor t_k / input\_period \rfloor$
+        \State $delta\_t \gets t_k - n \times input\_period$
+        \State $offset \gets \text{round}(delta\_t / input\_period)$
+        \For{$m \gets 0$ \textbf{to} $coeff\_order - 1$}
+            \If{$0 \leq n + m < \text{length of } input\_signal$}
+                \State $output\_signal[sample\_idx] \mathrel{{+}{=}} coeffs[m] \times input\_signal[n + m]$
+            \EndIf
+        \EndFor
+    \EndFor
+    \State \textbf{return} y
+\end{algorithmic}
+\end{algorithm}
+
+
+
+\subsection{Filter Design}
+FIR filter was used to calculate the coefficients for use in 
+%A useful rule for implementing FIR filters is that out-of-band side-lobe levels are bounded by 5 dB per bit. Thus, if we design an FIR filter with minimum side-lobe attenuation of 72 dB, we must represent the finite length coefficient set with at least 15 bits
+
+
+\subsubsection{Window design}
+% why use hamming?
+% why not other filters
+
+
+\subsection{Lagrange Coefficient Design}
+% describe the process
+% Cite the theory section
+
+\begin{algorithm}
+\caption{Lagrange Coefficient Calculation}\label{alg:main}
+\begin{algorithmic}
+\State \textbf{procedure} LagrangeCoeffs(time instant \textit{t}, input sampling interval \textit{T}, interpolation order \textit{N}):
+\State $coefficients[] \gets \textbf{1}$
+\For {$i = 1, 2, \ldots, N$}
+\For {$l = 1, 2, \ldots, N$}
+\If {$i \neq l$}
+
+\State $coefficients[i] \gets coefficients[i] \cdot \frac{t - l \cdot T}{i \cdot T - l \cdot T}$
+\EndIf
+\EndFor
+\EndFor
+\State \Return $coefficients[]$
+\end{algorithmic}
+\end{algorithm}
+% include figure of the lowpass filter design
+% Why use x amount taps?
+% window design
+
+\section{High-level implementation}
+% used python to implement in high order implementation
+% https://en.wikipedia.org/wiki/Software_design_description
+% why high level implementation
+Implementing a algorithm in a high-level language gives an understanding of how the algorithm works and how to quantize it in a abstract way. Python was chosen as the high-level language due to the compatibility with PYNQ, making it easier to compare results and effiency. Python have a range of libraries that can be used to simplify the design process.
+
+\subsection{Packages}
+% Numpy for array manipulation
+Different python packages were used to design the algorithm in: 
+\begin{itemize}
+    \item \textit{Numpy} was used for array manipulation.
+    \item \textit{Scipy} provided capability for signal processing and design of the \acrshort{fir} filter coefficients.
+    \item \textit{matplotlib} was used to plot the signals.
+\end{itemize}
+
+\subsection{Design process}
+% functions and modules
+% describe the functions and modules used in the implementation
+% describe the usage of float and int32
+% edge padding for lagrange method
+
+% fasrc algorithm
+\subsubsection{Main algorithm}
+% Describe the fasrc function and the chooses made
+
+
+\subsubsection{Filter coefficients}
+\textit{Scipy.signal.firwin} function was used to design the \acrshort{fir} filter coefficients. \textit{Firwin} is a function that calculates and returns the coefficients based on number of taps, cutoff frequency and chosen window method.
+
+\subsubsection{Lagrange Coefficients Calculation}
+
+\subsubsection{Testing}
+% what kind of testing was done
+
+
+\subsubsection{Optimizations}
+% what optimizations were made to make the algorithm go faster in python
+% do i need to remove flag when testing the different methods?
+
+\section{System Resources}
+\subsection{ZUBoard 1CG}
+ZUBoard 1CG is a development MPSoC FPGA board from Avnet.
+% https://www.avnet.com/wps/portal/us/products/avnet-boards/avnet-board-families/zuboard-1cg/
+
+\subsection{PYNQ}
+PYNQ is a platform from AMD that makes test processes a lot easier in conjunction with python. It is based on the jupyter framework, which makes it possible to test designs in a jupyter notebook server. PYNQ supports a range of FPGAs including ZUBoard 1CG. 
+
+\subsubsection{Overlays}
+In PYNQ, overlays are used to 
+% https://pynq.readthedocs.io/en/latest/pynq_overlays.html
+% https://pynq.readthedocs.io/en/latest/
+
+
+%\subsection{System test setup}?
+% tutorial for setup
+
+%In my setup i have a ...
+
+% setup: 
+% - PYNQ framework on the ZUBoard
+% - Jupyter notebooks with Python code and HDL overlay
+% - Ethernet for communcation between FPGA and Laptop
+% - Micro USB with terminal for debugging FPGA
+
+
+
+
+
+\section{Hardware implementation}
+% give an intro to the fpga implmentation and design process
+% The quantization of this implementation is done using fixed point representation
+% https://ieeexplore.ieee.org/document/679201
+
+
+
+\subsection{High Level Design}
+% AXI for communcations (why? How was it done?)
+% figure of DMA, PS and other blocks
+% custom ip block with AXI stream interface
+% https://www.asic-world.com/verilog/design_flow1.html#Figure_:_Typical_Design_flow
+\begin{figure}[h]
+    \centering
+    \input{figures/hdl_flow_diagram}
+    \caption{Overview of hardware architecture}
+    \label{fig:hdl_flow}
+\end{figure}
+
+
+
+
+\subsubsection{Processing system}
+% https://www.xilinx.com/products/intellectual-property/zynq-ultra-ps-e.html
+
+\subsubsection{AXI DMA}
+% https://pynq.readthedocs.io/en/v2.5/pynq_libraries/dma.html
+% include figure?
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/dma.png}
+    \caption{PYNQ DMA}
+    \label{fig:pynq_dma}
+\end{figure}
+
+
+
+
+
+\subsection{FASRC block}
+% MAC for multiplying
+% Block RAM for effiecient storage
+
+
+
